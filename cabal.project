@@ -1,0 +1,6 @@
+packages: .
+
+source-repository-package
+  type: git
+  location: https://github.com/CardanoSolutions/direct-sqlite
+  tag: 2b14a78cb73805e2e5d84354230e872a223faa39

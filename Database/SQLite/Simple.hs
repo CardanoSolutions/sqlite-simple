@@ -53,13 +53,16 @@ module Database.SQLite.Simple (
   , Only(..)
   , (:.)(..)
   , Base.SQLData(..)
+  , Base.SQLOpenFlag(..)
   , Statement(..)
   , ColumnIndex(..)
   , NamedParam(..)
     -- * Connections
   , open
+  , open'
   , close
   , withConnection
+  , withConnection'
   , setTrace
     -- * Queries that return results
   , query
@@ -168,6 +171,12 @@ instance Exception FormatError
 open :: String -> IO Connection
 open fname = Connection <$> Base.open (T.pack fname) <*> newIORef 0
 
+-- | Similar to 'open' but allows specifying opening flags.
+open' :: String -> [Base.SQLOpenFlag] -> IO Connection
+open' fname flags = Connection
+  <$> Base.open2 (T.pack fname) flags Base.SQLVFSDefault
+  <*> newIORef 0
+
 -- | Close a database connection.
 close :: Connection -> IO ()
 close = Base.close . connectionHandle
@@ -176,6 +185,10 @@ close = Base.close . connectionHandle
 -- closes the connection, even in the presence of exceptions.
 withConnection :: String -> (Connection -> IO a) -> IO a
 withConnection connString = bracket (open connString) close
+
+-- | Opens a database connection with flags. Similar to 'withConnection'.
+withConnection' :: String -> [Base.SQLOpenFlag] -> (Connection -> IO a) -> IO a
+withConnection' connString flags = bracket (open' connString flags) close
 
 unUtf8 :: BaseD.Utf8 -> T.Text
 unUtf8 (BaseD.Utf8 bs) = TE.decodeUtf8 bs
